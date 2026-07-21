@@ -1,0 +1,29 @@
+{
+  "name": "client-crm-dashboard",
+  "version": "1.0.0",
+  "description": "A lightweight CRM dashboard for tracking clients, leads, notes, and follow-up tasks.",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js",
+    "db:init": "psql $DATABASE_URL -f backend/db/schema.sql",
+    "db:seed": "node backend/db/seed.js"
+  },
+  "keywords": [
+    "crm",
+    "dashboard",
+    "express",
+    "postgresql"
+  ],
+  "author": "Nova Vey Engineering",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "pg": "^8.11.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
+  }
+}
