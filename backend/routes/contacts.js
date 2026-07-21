@@ -87,9 +87,9 @@ router.post('/', async (req, res) => {
 
     const result = await pool.query(
       `INSERT INTO contacts (name, email, phone, type, status, source)
-       VALUES ($1, $2, $3, COALESCE($4, DEFAULT), COALESCE($5, DEFAULT), $6)
+       VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
-      [name, email || null, phone || null, type || null, status || null, source || null]
+      [name, email || null, phone || null, type || 'lead', status || 'new', source || null]
     );
 
     res.status(201).json(result.rows[0]);

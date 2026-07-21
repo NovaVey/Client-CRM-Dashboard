@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Client CRM Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f8fafc;
+    --card-bg: #ffffff;
+    --border: #e2e8f0;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --accent: #4f46e5;
+    --accent-dark: #4338ca;
+    --accent-light: #eef2ff;
+    --red: #dc2626;
+    --red-bg: #fef2f2;
+    --shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.06);
+    --shadow-lg: 0 10px 30px rgba(15, 23, 42, 0.15);
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  a { color: var(--accent); text-decoration: none; }
+
+  button {
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  /* ---------- Top Nav ---------- */
+  header.topnav {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+  }
+
+  .brand {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .brand .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: inline-block;
+  }
+
+  nav.navlinks {
+    display: flex;
+    gap: 4px;
+  }
+
+  nav.navlinks button {
+    background: transparent;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    transition: background 0.15s, color 0.15s;
+  }
+
+  nav.navlinks button:hover {
+    background: var(--accent-light);
+    color: var(--accent-dark);
+  }
+
+  nav.navlinks button.active {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  /* ---------- Layout ---------- */
+  main.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px 20px 80px;
+  }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  h1.page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 0 20px;
+  }
+
+  h2.section-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 0 0 14px;
+    color: var(--text);
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px;
+  }
+
+  section.block {
+    margin-bottom: 24px;
+  }
+
+  /* ---------- Dashboard: stat cards ---------- */
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 16px 18px;
+  }
+
+  .stat-card .stat-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .stat-card .stat-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .stat-card.overdue .stat-value { color: var(--red); }
+
+  .highlight-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+
+  .highlight-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 16px 18px;
+  }
+
+  .highlight-card .num {
+    font-size: 1.6rem;
+    font-weight: 700;
+  }
+
+  .highlight-card .lbl {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  /* ---------- Dashboard grid ---------- */
+  .dash-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 20px;
+  }
+
+  @media (max-width: 800px) {
+    .dash-grid { grid-template-columns: 1fr; }
+  }
+
+  .list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    gap: 10px;
+  }
+  .list-item:last-child { border-bottom: none; }
+
+  .task-info { min-width: 0; }
+  .task-title { font-weight: 500; font-size: 0.92rem; }
+  .task-contact { font-size: 0.8rem; color: var(--text-muted); }
+  .task-due { font-size: 0.82rem; color: var(--text-muted); white-space: nowrap; }
+  .overdue-text { color: var(--red) !important; font-weight: 600; }
+
+  .contact-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    gap: 10px;
+  }
+  .contact-row:last-child { border-bottom: none; }
+
+  .contact-row .name-link {
+    font-weight: 600;
+    font-size: 0.92rem;
+    color: var(--text);
+    background: none;
+    border: none;
+    padding: 0;
+    text-align: left;
+  }
+  .contact-row .name-link:hover { color: var(--accent); text-decoration: underline; }
+
+  .badge-group { display: flex; gap: 6px; flex-shrink: 0; }
+
+  .empty-state {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    padding: 20px 0;
+    text-align: center;
+  }
+
+  .error-state {
+    color: var(--red);
+    background: var(--red-bg);
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 0.88rem;
+    margin-bottom: 16px;
+  }
+
+  /* ---------- Badges ---------- */
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    white-space: nowrap;
+  }
+
+  .badge-type-lead { background: #eef2ff; color: #4338ca; }
+  .badge-type-client { background: #ecfdf5; color: #047857; }
+
+  .badge-status-new { background: #f1f5f9; color: #475569; }
+  .badge-status-contacted { background: #fffbeb; color: #b45309; }
+  .badge-status-active { background: #ecfdf5; color: #15803d; }
+  .badge-status-inactive { background: #f1f5f9; color: #64748b; }
+  .badge-status-lost { background: #fef2f2; color: #b91c1c; }
+
+  /* ---------- Contacts view ---------- */
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .toolbar-left {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    flex: 1;
+  }
+
+  input[type="text"], input[type="email"], input[type="tel"], input[type="date"], select, textarea {
+    font-family: inherit;
+    font-size: 0.9rem;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+  }
+
+  .search-input {
+    min-width: 220px;
+    flex: 1;
+  }
+
+  .pill-group {
+    display: flex;
+    gap: 6px;
+    background: #eef1f5;
+    padding: 4px;
+    border-radius: 999px;
+  }
+
+  .pill {
+    border: none;
+    background: transparent;
+    padding: 7px 16px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-muted);
+  }
+
+  .pill.active {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .btn {
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    background: var(--accent);
+    color: #fff;
+    transition: background 0.15s;
+  }
+  .btn:hover { background: var(--accent-dark); }
+  .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .btn-secondary {
+    background: #fff;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { background: #f1f5f9; }
+
+  .btn-danger {
+    background: #fff;
+    color: var(--red);
+    border: 1px solid #fecaca;
+    padding: 6px 12px;
+    font-size: 0.78rem;
+    border-radius: 6px;
+    font-weight: 600;
+  }
+  .btn-danger:hover { background: var(--red-bg); }
+
+  .btn-back {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 6px 0;
+    margin-bottom: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-back:hover { color: var(--accent); }
+
+  .contact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+  }
+
+  @media (max-width: 640px) {
+    .contact-grid { grid-template-columns: 1fr; }
+  }
+
+  .contact-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 18px;
+    cursor: pointer;
+    transition: box-shadow 0.15s, transform 0.15s;
+    text-align: left;
+    display: block;
+    width: 100%;
+  }
+
+  .contact-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+  }
+
+  .contact-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .contact-card-name {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 2px;
+  }
+
+  .contact-card-meta {
+    font-size: 0.83rem;
+    color: var(--text-muted);
+    margin: 3px 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* ---------- Slide-in panel ---------- */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.4);
+    z-index: 30;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  .overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .side-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: 420px;
+    max-width: 100%;
+    background: #fff;
+    z-index: 31;
+    box-shadow: -8px 0 30px rgba(15, 23, 42, 0.2);
+    transform: translateX(100%);
+    transition: transform 0.25s ease;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .side-panel.open {
+    transform: translateX(0);
+  }
+
+  @media (max-width: 640px) {
+    .side-panel { width: 100%; }
+  }
+
+  .side-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 22px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .side-panel-header h2 { margin: 0; font-size: 1.1rem; }
+
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 1.4rem;
+    line-height: 1;
+    color: var(--text-muted);
+    padding: 4px 8px;
+  }
+  .close-btn:hover { color: var(--text); }
+
+  .side-panel-body {
+    padding: 22px;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .form-group label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+  }
+
+  .form-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  /* ---------- Contact Detail ---------- */
+  .detail-header {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+
+  .detail-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .detail-badges {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .detail-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .detail-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+
+  .notes-list, .tasks-list {
+    list-style: none;
+    margin: 0 0 18px;
+    padding: 0;
+  }
+
+  .note-item, .task-item {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .note-item:last-child, .task-item:last-child { border-bottom: none; }
+
+  .note-body { font-size: 0.9rem; color: var(--text); flex: 1; }
+  .note-date { font-size: 0.76rem; color: var(--text-muted); margin-top: 4px; }
+
+  .task-item .task-left {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .task-item input[type="checkbox"] {
+    margin-top: 3px;
+    width: 17px;
+    height: 17px;
+    accent-color: var(--accent);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .task-item .task-title { font-weight: 500; font-size: 0.9rem; }
+  .task-item .task-due { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
+  .task-item.completed .task-title { text-decoration: line-through; color: var(--text-muted); }
+
+  .add-note-form textarea {
+    width: 100%;
+    min-height: 70px;
+    resize: vertical;
+    font-family: inherit;
+  }
+
+  .add-note-form, .add-task-form {
+    margin-top: 14px;
+  }
+
+  .add-task-form {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+
+  .add-task-form .form-group { flex: 1; min-width: 140px; margin-bottom: 0; }
+
+  .inline-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+  }
+
+  .loading-text {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    padding: 24px 0;
+    text-align: center;
+  }
+
+  .field-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  @media (max-width: 640px) {
+    header.topnav { padding: 0 14px; }
+    main.container { padding: 20px 14px 60px; }
+    .brand span.brand-full { display: none; }
+    .toolbar { flex-direction: column; align-items: stretch; }
+    .toolbar-left { flex-direction: column; align-items: stretch; }
+    .search-input { min-width: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topnav">
+  <div class="brand"><span class="dot"></span><span class="brand-full">Client CRM Dashboard</span></div>
+  <nav class="navlinks">
+    <button id="nav-dashboard" class="active" data-view="dashboard">Dashboard</button>
+    <button id="nav-contacts" data-view="contacts">Contacts</button>
+  </nav>
+</header>
+
+<main class="container">
+
+  <!-- DASHBOARD VIEW -->
+  <section id="view-dashboard" class="view active">
+    <h1 class="page-title">Dashboard</h1>
+    <div id="dashboard-error"></div>
+
+    <div id="stat-cards" class="stat-row"></div>
+    <div id="highlight-cards" class="highlight-row"></div>
+
+    <div class="dash-grid">
+      <div class="card block">
+        <h2 class="section-title">Tasks Due Soon</h2>
+        <div id="tasks-due-list"></div>
+      </div>
+      <div class="card block">
+        <h2 class="section-title">Recently Added</h2>
+        <div id="recent-contacts-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACTS VIEW -->
+  <section id="view-contacts" class="view">
+    <h1 class="page-title">Contacts</h1>
+    <div id="contacts-error"></div>
+
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <input type="text" id="search-input" class="search-input" placeholder="Search contacts by name, email...">
+        <div class="pill-group" id="type-pills">
+          <button class="pill active" data-type="">All</button>
+          <button class="pill" data-type="lead">Leads</button>
+          <button class="pill" data-type="client">Clients</button>
+        </div>
+        <select id="status-filter">
+          <option value="">All Statuses</option>
+          <option value="new">New</option>
+          <option value="contacted">Contacted</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+          <option value="lost">Lost</option>
+        </select>
+      </div>
+      <button class="btn" id="add-contact-btn">+ Add Contact</button>
+    </div>
+
+    <div id="contact-grid" class="contact-grid"></div>
+  </section>
+
+  <!-- CONTACT DETAIL VIEW -->
+  <section id="view-detail" class="view">
+    <button class="btn-back" id="back-to-contacts">&larr; Back to Contacts</button>
+    <div id="detail-error"></div>
+    <div id="detail-content"><div class="loading-text">Loading...</div></div>
+  </section>
+
+</main>
+
+<!-- Slide-in panel for Add Contact -->
+<div class="overlay" id="overlay"></div>
+<div class="side-panel" id="side-panel">
+  <div class="side-panel-header">
+    <h2>Add Contact</h2>
+    <button class="close-btn" id="close-panel-btn">&times;</button>
+  </div>
+  <div class="side-panel-body">
+    <form id="add-contact-form">
+      <div class="form-group">
+        <label for="ac-name">Name *</label>
+        <input type="text" id="ac-name" required>
+      </div>
+      <div class="form-group">
+        <label for="ac-email">Email</label>
+        <input type="email" id="ac-email">
+      </div>
+      <div class="form-group">
+        <label for="ac-phone">Phone</label>
+        <input type="tel" id="ac-phone">
+      </div>
+      <div class="form-row-2">
+        <div class="form-group">
+          <label for="ac-type">Type</label>
+          <select id="ac-type">
+            <option value="lead">Lead</option>
+            <option value="client">Client</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="ac-status">Status</label>
+          <select id="ac-status">
+            <option value="new">New</option>
+            <option value="contacted">Contacted</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="lost">Lost</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="ac-source">Source</label>
+        <input type="text" id="ac-source" placeholder="e.g. referral, website">
+      </div>
+      <div id="add-contact-error"></div>
+      <div class="inline-actions">
+        <button type="submit" class="btn" id="ac-submit-btn">Create Contact</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---------------- State ----------------
+  var state = {
+    currentView: 'dashboard',
+    currentContactId: null,
+    contactsFilters: { search: '', type: '', status: '' },
+    searchDebounceTimer: null
+  };
+
+  var STATUSES = ['new', 'contacted', 'active', 'inactive', 'lost'];
+
+  // ---------------- Helpers ----------------
+  function $(sel, root) { return (root || document).querySelector(sel); }
+  function $all(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function todayStr() {
+    var d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+
+  function parseDateOnly(dateStr) {
+    if (!dateStr) return null;
+    var p = String(dateStr).slice(0, 10).split('-');
+    return new Date(+p[0], +p[1] - 1, +p[2]);
+  }
+
+  function isOverdue(dueDate, completed) {
+    if (!dueDate || completed) return false;
+    var due = parseDateOnly(dueDate);
+    // normalize to avoid timezone edge issues: compare date-only strings
+    var dueDay = new Date(due.getFullYear(), due.getMonth(), due.getDate());
+    var today = todayStr();
+    return dueDay < today;
+  }
+
+  function formatDate(dateStr) {
+    if (!dateStr) return 'No due date';
+    var d = parseDateOnly(dateStr);
+    if (!d || isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
+  function formatDateTime(dateStr) {
+    if (!dateStr) return '';
+    var d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) +
+      ' ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function capitalize(s) {
+    if (!s) return '';
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+
+  function typeBadge(type) {
+    var t = (type || '').toLowerCase();
+    var cls = t === 'client' ? 'badge-type-client' : 'badge-type-lead';
+    return '<span class="badge ' + cls + '">' + escapeHtml(capitalize(t || 'lead')) + '</span>';
+  }
+
+  function statusBadge(status) {
+    var s = (status || '').toLowerCase();
+    var cls = 'badge-status-' + (STATUSES.indexOf(s) !== -1 ? s : 'new');
+    return '<span class="badge ' + cls + '">' + escapeHtml(capitalize(s || 'new')) + '</span>';
+  }
+
+  function taskContactName(task) {
+    return task.contact_name ?? task.name ?? task.contactName ?? 'Unknown contact';
+  }
+
+  // ---------------- Fetch wrapper ----------------
+  async function apiFetch(url, options) {
+    var res = await fetch(url, options);
+    if (!res.ok) {
+      var text = '';
+      try { text = await res.text(); } catch (e) {}
+      throw new Error('Request failed (' + res.status + '): ' + (text || res.statusText));
+    }
+    var contentType = res.headers.get('content-type') || '';
+    if (contentType.indexOf('application/json') !== -1) {
+      return res.json();
+    }
+    return null;
+  }
+
+  function showError(containerId, message) {
+    var el = document.getElementById(containerId);
+    if (!el) return;
+    el.innerHTML = '<div class="error-state">' + escapeHtml(message) + '</div>';
+  }
+
+  function clearError(containerId) {
+    var el = document.getElementById(containerId);
+    if (el) el.innerHTML = '';
+  }
+
+  // ---------------- View switching ----------------
+  function switchView(viewName) {
+    state.currentView = viewName;
+    $all('.view').forEach(function (v) { v.classList.remove('active'); });
+    var target = document.getElementById('view-' + viewName);
+    if (target) target.classList.add('active');
+
+    $all('.navlinks button').forEach(function (btn) {
+      btn.classList.toggle('active', btn.dataset.view === viewName);
+    });
+
+    window.scrollTo(0, 0);
+  }
+
+  function goToDashboard() {
+    switchView('dashboard');
+    loadDashboard();
+  }
+
+  function goToContacts() {
+    switchView('contacts');
+    loadContacts();
+  }
+
+  function goToDetail(contactId) {
+    state.currentContactId = contactId;
+    switchView('detail');
+    loadContactDetail(contactId);
+  }
+
+  // ---------------- Dashboard ----------------
+  async function loadDashboard() {
+    clearError('dashboard-error');
+    renderStatCardsSkeleton();
+
+    var dashboardData = null;
+    var allContacts = null;
+    var dashErr = null;
+    var contactsErr = null;
+
+    try {
+      dashboardData = await apiFetch('/api/dashboard');
+    } catch (e) {
+      console.error('Failed to load /api/dashboard', e);
+      dashErr = e;
+    }
+
+    try {
+      allContacts = await apiFetch('/api/contacts');
+    } catch (e) {
+      console.error('Failed to load /api/contacts for stats', e);
+      contactsErr = e;
+    }
+
+    if (dashErr && contactsErr) {
+      showError('dashboard-error', 'Could not load dashboard data. Please try again later.');
+      $('#stat-cards').innerHTML = '';
+      $('#highlight-cards').innerHTML = '';
+      $('#tasks-due-list').innerHTML = '<div class="empty-state">Unable to load.</div>';
+      $('#recent-contacts-list').innerHTML = '<div class="empty-state">Unable to load.</div>';
+      return;
+    }
+    if (dashErr || contactsErr) {
+      showError('dashboard-error', 'Some dashboard data failed to load. Showing what is available.');
+    }
+
+    renderStatCards(dashboardData ? dashboardData.status_counts : []);
+    renderHighlightCards(dashboardData, allContacts);
+    renderTasksDueSoon(dashboardData ? dashboardData.tasks_due_soon : []);
+    renderRecentContacts(dashboardData ? dashboardData.recent_contacts : []);
+  }
+
+  function renderStatCardsSkeleton() {
+    var container = $('#stat-cards');
+    container.innerHTML = STATUSES.map(function (s) {
+      return '<div class="stat-card"><div class="stat-label">' + escapeHtml(capitalize(s)) +
+        '</div><div class="stat-value">&hellip;</div></div>';
+    }).join('');
+  }
+
+  function renderStatCards(statusCounts) {
+    statusCounts = statusCounts || [];
+    var counts = {};
+    STATUSES.forEach(function (s) { counts[s] = 0; });
+    statusCounts.forEach(function (row) {
+      var key = (row.status || '').toLowerCase();
+      if (counts.hasOwnProperty(key)) counts[key] = row.count;
+      else counts[key] = row.count;
+    });
+
+    var container = $('#stat-cards');
+    container.innerHTML = STATUSES.map(function (s) {
+      return '<div class="stat-card">' +
+        '<div class="stat-label">' + escapeHtml(capitalize(s)) + '</div>' +
+        '<div class="stat-value">' + escapeHtml(String(counts[s] || 0)) + '</div>' +
+        '</div>';
+    }).join('');
+  }
+
+  function renderHighlightCards(dashboardData, allContacts) {
+    var leadsCount = 0, clientsCount = 0;
+    if (Array.isArray(allContacts)) {
+      allContacts.forEach(function (c) {
+        var t = (c.type || '').toLowerCase();
+        if (t === 'client') clientsCount++;
+        else leadsCount++;
+      });
+    }
+
+    var overdueCount = 0;
+    var tasksDue = (dashboardData && dashboardData.tasks_due_soon) || [];
+    tasksDue.forEach(function (t) {
+      if (isOverdue(t.due_date, t.completed)) overdueCount++;
+    });
+
+    var container = $('#highlight-cards');
+    container.innerHTML =
+      '<div class="highlight-card"><div class="num">' + leadsCount + '</div><div class="lbl">Leads</div></div>' +
+      '<div class="highlight-card"><div class="num">' + clientsCount + '</div><div class="lbl">Clients</div></div>' +
+      '<div class="highlight-card' + (overdueCount > 0 ? ' overdue' : '') + '"><div class="num' + (overdueCount > 0 ? ' overdue-text' : '') + '">' + overdueCount + '</div><div class="lbl">Tasks Overdue</div></div>';
+  }
+
+  function renderTasksDueSoon(tasks) {
+    tasks = tasks || [];
+    var container = $('#tasks-due-list');
+    if (tasks.length === 0) {
+      container.innerHTML = '<div class="empty-state">No tasks due soon.</div>';
+      return;
+    }
+    container.innerHTML = tasks.map(function (t) {
+      var overdue = isOverdue(t.due_date, t.completed);
+      return '<div class="list-item">' +
+        '<div class="task-info">' +
+        '<div class="task-title' + (overdue ? ' overdue-text' : '') + '">' + escapeHtml(t.title || 'Untitled task') + '</div>' +
+        '<div class="task-contact">' + escapeHtml(taskContactName(t)) + '</div>' +
+        '</div>' +
+        '<div class="task-due' + (overdue ? ' overdue-text' : '') + '">' + escapeHtml(formatDate(t.due_date)) + '</div>' +
+        '</div>';
+    }).join('');
+  }
+
+  function renderRecentContacts(contacts) {
+    contacts = contacts || [];
+    var container = $('#recent-contacts-list');
+    if (contacts.length === 0) {
+      container.innerHTML = '<div class="empty-state">No contacts yet.</div>';
+      return;
+    }
+    var recent = contacts.slice(0, 5);
+    container.innerHTML = recent.map(function (c) {
+      return '<div class="contact-row">' +
+        '<button class="name-link" data-contact-id="' + escapeHtml(c.id) + '">' + escapeHtml(c.name || 'Unnamed') + '</button>' +
+        '<div class="badge-group">' + typeBadge(c.type) + statusBadge(c.status) + '</div>' +
+        '</div>';
+    }).join('');
+
+    $all('.name-link', container).forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        goToDetail(btn.dataset.contactId);
+      });
+    });
+  }
+
+  // ---------------- Contacts ----------------
+  function buildContactsQuery() {
+    var params = new URLSearchParams();
+    if (state.contactsFilters.search) params.set('search', state.contactsFilters.search);
+    if (state.contactsFilters.type) params.set('type', state.contactsFilters.type);
+    if (state.contactsFilters.status) params.set('status', state.contactsFilters.status);
+    var qs = params.toString();
+    return '/api/contacts' + (qs ? '?' + qs : '');
+  }
+
+  async function loadContacts() {
+    clearError('contacts-error');
+    var container = $('#contact-grid');
+    container.innerHTML = '<div class="loading-text">Loading contacts...</div>';
+    try {
+      var contacts = await apiFetch(buildContactsQuery());
+      renderContactGrid(contacts);
+    } catch (e) {
+      console.error('Failed to load contacts', e);
+      showError('contacts-error', 'Could not load contacts. Please try again later.');
+      container.innerHTML = '';
+    }
+  }
+
+  function renderContactGrid(contacts) {
+    contacts = contacts || [];
+    var container = $('#contact-grid');
+    if (contacts.length === 0) {
+      container.innerHTML = '<div class="empty-state">No contacts match your filters.</div>';
+      return;
+    }
+    container.innerHTML = contacts.map(function (c) {
+      return '<div class="contact-card" data-contact-id="' + escapeHtml(c.id) + '" role="button" tabindex="0">' +
+        '<div class="contact-card-head">' +
+        '<div class="contact-card-name">' + escapeHtml(c.name || 'Unnamed') + '</div>' +
+        '</div>' +
+        '<div class="badge-group" style="margin-bottom:10px;">' + typeBadge(c.type) + statusBadge(c.status) + '</div>' +
+        '<div class="contact-card-meta">' + (c.email ? escapeHtml(c.email) : '&mdash;') + '</div>' +
+        '<div class="contact-card-meta">Source: ' + (c.source ? escapeHtml(c.source) : '&mdash;') + '</div>' +
+        '</div>';
+    }).join('');
+
+    $all('.contact-card', container).forEach(function (card) {
+      card.addEventListener('click', function () {
+        goToDetail(card.dataset.contactId);
+      });
+      card.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          goToDetail(card.dataset.contactId);
+        }
+      });
+    });
+  }
+
+  function initContactsControls() {
+    var searchInput = $('#search-input');
+    searchInput.addEventListener('input', function () {
+      clearTimeout(state.searchDebounceTimer);
+      var value = searchInput.value;
+      state.searchDebounceTimer = setTimeout(function () {
+        state.contactsFilters.search = value.trim();
+        loadContacts();
+      }, 300);
+    });
+
+    $all('#type-pills .pill').forEach(function (pill) {
+      pill.addEventListener('click', function () {
+        $all('#type-pills .pill').forEach(function (p) { p.classList.remove('active'); });
+        pill.classList.add('active');
+        state.contactsFilters.type = pill.dataset.type;
+        loadContacts();
+      });
+    });
+
+    $('#status-filter').addEventListener('change', function (e) {
+      state.contactsFilters.status = e.target.value;
+      loadContacts();
+    });
+
+    $('#add-contact-btn').addEventListener('click', openAddContactPanel);
+    $('#close-panel-btn').addEventListener('click', closeAddContactPanel);
+    $('#overlay').addEventListener('click', closeAddContactPanel);
+    $('#add-contact-form').addEventListener('submit', handleAddContactSubmit);
+  }
+
+  // ---------------- Slide-in panel ----------------
+  function openAddContactPanel() {
+    $('#add-contact-form').reset();
+    clearError('add-contact-error');
+    $('#overlay').classList.add('open');
+    $('#side-panel').classList.add('open');
+  }
+
+  function closeAddContactPanel() {
+    $('#overlay').classList.remove('open');
+    $('#side-panel').classList.remove('open');
+  }
+
+  async function handleAddContactSubmit(e) {
+    e.preventDefault();
+    clearError('add-contact-error');
+
+    var name = $('#ac-name').value.trim();
+    if (!name) {
+      showError('add-contact-error', 'Name is required.');
+      return;
+    }
+
+    var payload = {
+      name: name,
+      email: $('#ac-email').value.trim(),
+      phone: $('#ac-phone').value.trim(),
+      type: $('#ac-type').value,
+      status: $('#ac-status').value,
+      source: $('#ac-source').value.trim()
+    };
+
+    var submitBtn = $('#ac-submit-btn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Creating...';
+
+    try {
+      await apiFetch('/api/contacts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      closeAddContactPanel();
+      await loadContacts();
+    } catch (err) {
+      console.error('Failed to create contact', err);
+      showError('add-contact-error', 'Failed to create contact. Please try again.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Create Contact';
+    }
+  }
+
+  // ---------------- Contact Detail ----------------
+  async function loadContactDetail(contactId) {
+    clearError('detail-error');
+    var container = $('#detail-content');
+    container.innerHTML = '<div class="loading-text">Loading...</div>';
+    try {
+      var contact = await apiFetch('/api/contacts/' + encodeURIComponent(contactId));
+      renderContactDetail(contact);
+    } catch (e) {
+      console.error('Failed to load contact detail', e);
+      showError('detail-error', 'Could not load this contact. Please try again later.');
+      container.innerHTML = '';
+    }
+  }
+
+  function renderContactDetail(contact) {
+    var container = $('#detail-content');
+    var notes = (contact.notes || []).slice().sort(function (a, b) {
+      return new Date(a.created_at) - new Date(b.created_at);
+    });
+    var tasks = (contact.tasks || []).slice().sort(function (a, b) {
+      return new Date(a.due_date || 0) - new Date(b.due_date || 0);
+    });
+
+    container.innerHTML =
+      '<div class="detail-header">' +
+        '<div class="detail-header-top">' +
+          '<div class="detail-badges">' +
+            typeBadge(contact.type) +
+            '<select id="detail-status">' +
+              STATUSES.map(function (s) {
+                var sel = (contact.status || '').toLowerCase() === s ? ' selected' : '';
+                return '<option value="' + s + '"' + sel + '>' + capitalize(s) + '</option>';
+              }).join('') +
+            '</select>' +
+          '</div>' +
+        '</div>' +
+        '<div class="detail-form-grid">' +
+          '<div class="form-group"><label class="field-label" for="detail-name">Name</label><input type="text" id="detail-name" value="' + escapeHtml(contact.name || '') + '"></div>' +
+          '<div class="form-group"><label class="field-label" for="detail-email">Email</label><input type="email" id="detail-email" value="' + escapeHtml(contact.email || '') + '"></div>' +
+          '<div class="form-group"><label class="field-label" for="detail-phone">Phone</label><input type="tel" id="detail-phone" value="' + escapeHtml(contact.phone || '') + '"></div>' +
+          '<div class="form-group"><label class="field-label" for="detail-source">Source</label><input type="text" id="detail-source" value="' + escapeHtml(contact.source || '') + '"></div>' +
+        '</div>' +
+        '<div id="detail-save-error"></div>' +
+        '<div class="detail-actions"><button class="btn" id="save-contact-btn">Save changes</button></div>' +
+      '</div>' +
+
+      '<div class="card block">' +
+        '<h2 class="section-title">Notes</h2>' +
+        '<ul class="notes-list" id="notes-list">' + renderNotesList(notes) + '</ul>' +
+        '<form class="add-note-form" id="add-note-form">' +
+          '<div class="form-group"><textarea id="note-text" placeholder="Add a note..." required></textarea></div>' +
+          '<div id="add-note-error"></div>' +
+          '<div class="inline-actions"><button type="submit" class="btn">Add Note</button></div>' +
+        '</form>' +
+      '</div>' +
+
+      '<div class="card block">' +
+        '<h2 class="section-title">Tasks</h2>' +
+        '<ul class="tasks-list" id="tasks-list">' + renderTasksList(tasks) + '</ul>' +
+        '<form class="add-task-form" id="add-task-form">' +
+          '<div class="form-group"><label class="field-label" for="task-title">Title</label><input type="text" id="task-title" required></div>' +
+          '<div class="form-group"><label class="field-label" for="task-due">Due date</label><input type="date" id="task-due"></div>' +
+          '<button type="submit" class="btn">Add Task</button>' +
+        '</form>' +
+        '<div id="add-task-error"></div>' +
+      '</div>';
+
+    $('#save-contact-btn').addEventListener('click', function () {
+      saveContactChanges(contact.id);
+    });
+    $('#add-note-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      addNote(contact.id);
+    });
+    $('#add-task-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      addTask(contact.id);
+    });
+    wireNoteDeleteButtons(contact.id);
+    wireTaskButtons(contact.id);
+  }
+
+  function renderNotesList(notes) {
+    if (!notes || notes.length === 0) {
+      return '<li class="empty-state">No notes yet.</li>';
+    }
+    return notes.map(function (n) {
+      return '<li class="note-item">' +
+        '<div class="note-body">' + escapeHtml(n.note_text) +
+        '<div class="note-date">' + escapeHtml(formatDateTime(n.created_at)) + '</div>' +
+        '</div>' +
+        '<button class="btn-danger" data-note-id="' + escapeHtml(n.id) + '">Delete</button>' +
+        '</li>';
+    }).join('');
+  }
+
+  function renderTasksList(tasks) {
+    if (!tasks || tasks.length === 0) {
+      return '<li class="empty-state">No tasks yet.</li>';
+    }
+    return tasks.map(function (t) {
+      var overdue = isOverdue(t.due_date, t.completed);
+      return '<li class="task-item' + (t.completed ? ' completed' : '') + '">' +
+        '<div class="task-left">' +
+          '<input type="checkbox" data-task-id="' + escapeHtml(t.id) + '"' + (t.completed ? ' checked disabled' : '') + '>' +
+          '<div>' +
+            '<div class="task-title' + (overdue ? ' overdue-text' : '') + '">' + escapeHtml(t.title || 'Untitled task') + '</div>' +
+            '<div class="task-due' + (overdue ? ' overdue-text' : '') + '">' + escapeHtml(formatDate(t.due_date)) + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<button class="btn-danger" data-task-delete-id="' + escapeHtml(t.id) + '">Delete</button>' +
+        '</li>';
+    }).join('');
+  }
+
+  function wireNoteDeleteButtons(contactId) {
+    $all('#notes-list [data-note-id]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        deleteNote(btn.dataset.noteId, contactId);
+      });
+    });
+  }
+
+  function wireTaskButtons(contactId) {
+    $all('#tasks-list input[type="checkbox"]').forEach(function (cb) {
+      cb.addEventListener('change', function () {
+        if (cb.checked) completeTask(cb.dataset.taskId, contactId);
+      });
+    });
+    $all('#tasks-list [data-task-delete-id]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        deleteTask(btn.dataset.taskDeleteId, contactId);
+      });
+    });
+  }
+
+  async function saveContactChanges(contactId) {
+    clearError('detail-save-error');
+    var btn = $('#save-contact-btn');
+    var payload = {
+      name: $('#detail-name').value.trim(),
+      email: $('#detail-email').value.trim(),
+      phone: $('#detail-phone').value.trim(),
+      status: $('#detail-status').value,
+      source: $('#detail-source').value.trim(),
+      type: undefined
+    };
+    // preserve type by re-reading current badge text isn't reliable; fetch not needed since PUT should keep unspecified fields,
+    // but to be safe we include type from the badge already rendered.
+    var typeBadgeEl = $('.detail-badges .badge-type-lead, .detail-badges .badge-type-client');
+    payload.type = typeBadgeEl ? typeBadgeEl.textContent.trim().toLowerCase() : undefined;
+
+    if (!payload.name) {
+      showError('detail-save-error', 'Name is required.');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+    try {
+      await apiFetch('/api/contacts/' + encodeURIComponent(contactId), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      await loadContactDetail(contactId);
+    } catch (e) {
+      console.error('Failed to save contact', e);
+      showError('detail-save-error', 'Failed to save changes. Please try again.');
+      btn.disabled = false;
+      btn.textContent = 'Save changes';
+    }
+  }
+
+  async function addNote(contactId) {
+    clearError('add-note-error');
+    var textarea = $('#note-text');
+    var text = textarea.value.trim();
+    if (!text) return;
+    try {
+      await apiFetch('/api/notes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contact_id: contactId, note_text: text })
+      });
+      await loadContactDetail(contactId);
+    } catch (e) {
+      console.error('Failed to add note', e);
+      showError('add-note-error', 'Failed to add note. Please try again.');
+    }
+  }
+
+  async function deleteNote(noteId, contactId) {
+    try {
+      await apiFetch('/api/notes/' + encodeURIComponent(noteId), { method: 'DELETE' });
+      await loadContactDetail(contactId);
+    } catch (e) {
+      console.error('Failed to delete note', e);
+      showError('detail-error', 'Failed to delete note. Please try again.');
+    }
+  }
+
+  async function addTask(contactId) {
+    clearError('add-task-error');
+    var titleInput = $('#task-title');
+    var dueInput = $('#task-due');
+    var title = titleInput.value.trim();
+    if (!title) return;
+    try {
+      await apiFetch('/api/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contact_id: contactId, title: title, due_date: dueInput.value || null })
+      });
+      await loadContactDetail(contactId);
+    } catch (e) {
+      console.error('Failed to add task', e);
+      showError('add-task-error', 'Failed to add task. Please try again.');
+    }
+  }
+
+  async function completeTask(taskId, contactId) {
+    try {
+      await apiFetch('/api/tasks/' + encodeURIComponent(taskId) + '/complete', { method: 'PATCH' });
+      await loadContactDetail(contactId);
+    } catch (e) {
+      console.error('Failed to complete task', e);
+      showError('detail-error', 'Failed to complete task. Please try again.');
+    }
+  }
+
+  async function deleteTask(taskId, contactId) {
+    try {
+      await apiFetch('/api/tasks/' + encodeURIComponent(taskId), { method: 'DELETE' });
+      await loadContactDetail(contactId);
+    } catch (e) {
+      console.error('Failed to delete task', e);
+      showError('detail-error', 'Failed to delete task. Please try again.');
+    }
+  }
+
+  // ---------------- Init ----------------
+  function init() {
+    $('#nav-dashboard').addEventListener('click', goToDashboard);
+    $('#nav-contacts').addEventListener('click', goToContacts);
+    $('#back-to-contacts').addEventListener('click', goToContacts);
+
+    initContactsControls();
+
+    goToDashboard();
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
+
+</body>
+</html>
