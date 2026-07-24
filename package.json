@@ -8,7 +8,8 @@
     "dev": "nodemon backend/server.js",
     "db:init": "psql $DATABASE_URL -f backend/db/schema.sql",
     "db:seed": "node backend/db/seed.js",
-    "reminders:send": "node backend/jobs/sendReminderDigest.js"
+    "reminders:send": "node backend/jobs/sendReminderDigest.js",
+    "test:e2e": "playwright test"
   },
   "keywords": [
     "crm",
@@ -25,6 +26,7 @@
     "pg": "^8.11.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "nodemon": "^3.1.7"
   }
 }
