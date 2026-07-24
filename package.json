@@ -7,7 +7,8 @@
     "start": "node backend/server.js",
     "dev": "nodemon backend/server.js",
     "db:init": "psql $DATABASE_URL -f backend/db/schema.sql",
-    "db:seed": "node backend/db/seed.js"
+    "db:seed": "node backend/db/seed.js",
+    "reminders:send": "node backend/jobs/sendReminderDigest.js"
   },
   "keywords": [
     "crm",

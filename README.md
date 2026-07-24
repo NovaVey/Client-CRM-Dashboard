@@ -11,6 +11,7 @@ A lightweight CRM for small businesses to keep track of clients and leads in one
 - **Follow-up tasks** — create tasks tied to a contact, mark them complete, or delete them.
 - **Overdue task flagging** — tasks past their due date are visually flagged so nothing falls through the cracks.
 - **Realistic seed data** — a seed script populates 20 sample contacts with notes and tasks so the app looks lived-in immediately.
+- **Email reminders (optional)** — an opt-in daily digest email listing overdue and soon-due tasks, sent via [Resend](https://resend.com). Off by default; see [Email Reminders](#email-reminders) below.
 
 ## Tech Stack
 
@@ -87,6 +88,36 @@ A lightweight CRM for small businesses to keep track of clients and leads in one
 
 8. Visit **http://localhost:3004**
 
+## Email Reminders
+
+The app can send a daily digest email ("3 overdue, 2 due this week") listing incomplete tasks that are overdue or due within 3 days. It's **disabled by default** and only turns on if you explicitly configure it.
+
+### Configuration
+
+Set these in your `.env` (or your host's environment variables):
+
+| Variable | Required | Description |
+|---|---|---|
+| `REMINDER_EMAILS_ENABLED` | Yes | Set to `true` to turn reminders on. Any other value (or unset) keeps them off. |
+| `RESEND_API_KEY` | Yes, if enabled | API key from your [Resend](https://resend.com) account. |
+| `REMINDER_FROM_EMAIL` | Yes, if enabled | The verified sender address in Resend (e.g. `reminders@yourdomain.com`). |
+| `REMINDER_TO_EMAIL` | No | Address the digest is sent to. Defaults to the app owner's email if unset. |
+
+You can check the current status and send a digest on demand from the **Dashboard** view (an "Email Reminders" card shows enabled/disabled and has a "Send Now" button), or via the API:
+
+- `GET /api/reminders/status` — `{ "enabled": true|false }`
+- `POST /api/reminders/send` — sends the digest immediately if enabled and there's anything due; otherwise responds with a reason and sends nothing.
+
+### Scheduling a daily send
+
+For a recurring digest (rather than manual "Send Now" clicks), run the standalone job on a schedule:
+
+```bash
+npm run reminders:send
+```
+
+This script connects to the database, checks `REMINDER_EMAILS_ENABLED`, and sends (or skips) accordingly, then exits — it's meant to be invoked by a scheduler, not left running. On Railway, add a **Cron Job** service pointed at this repo with the start command `npm run reminders:send` and the same environment variables as the main app (`DATABASE_URL`, `REMINDER_EMAILS_ENABLED`, `RESEND_API_KEY`, `REMINDER_FROM_EMAIL`, `REMINDER_TO_EMAIL`), scheduled once daily.
+
 ## API Reference
 
 | Method | Endpoint | Description |
@@ -102,6 +133,8 @@ A lightweight CRM for small businesses to keep track of clients and leads in one
 | POST | `/api/tasks` | Create a follow-up task for a contact |
 | PATCH | `/api/tasks/:id/complete` | Mark a task as complete |
 | DELETE | `/api/tasks/:id` | Delete a task |
+| GET | `/api/reminders/status` | Check whether email reminders are enabled |
+| POST | `/api/reminders/send` | Send the overdue/due-soon task digest email now (if enabled) |
 
 ## License
 
