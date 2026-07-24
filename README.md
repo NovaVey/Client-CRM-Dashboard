@@ -96,6 +96,7 @@ A lightweight CRM for small businesses to keep track of clients and leads in one
 | POST | `/api/contacts` | Create a new contact |
 | GET | `/api/contacts/:id` | Get a single contact, including its notes and tasks |
 | PUT | `/api/contacts/:id` | Update a contact |
+| DELETE | `/api/contacts/:id` | Delete a contact (also removes its notes and tasks) |
 | POST | `/api/notes` | Add a note to a contact |
 | DELETE | `/api/notes/:id` | Delete a note |
 | POST | `/api/tasks` | Create a follow-up task for a contact |
