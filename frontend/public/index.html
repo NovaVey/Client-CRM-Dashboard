@@ -444,6 +444,23 @@
     white-space: nowrap;
   }
 
+  .card-delete-btn {
+    flex-shrink: 0;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: 4px 6px;
+    border-radius: 6px;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .card-delete-btn:hover {
+    background: var(--red-bg);
+    color: var(--red);
+  }
+
   /* ---------- Slide-in panel ---------- */
   .overlay {
     position: fixed;
@@ -1094,6 +1111,7 @@
       return '<div class="contact-card" data-contact-id="' + escapeHtml(c.id) + '" role="button" tabindex="0">' +
         '<div class="contact-card-head">' +
         '<div class="contact-card-name">' + escapeHtml(c.name || 'Unnamed') + '</div>' +
+        '<button type="button" class="card-delete-btn" data-delete-id="' + escapeHtml(c.id) + '" aria-label="Delete ' + escapeHtml(c.name || 'contact') + '" title="Delete contact">&times;</button>' +
         '</div>' +
         '<div class="badge-group" style="margin-bottom:10px;">' + typeBadge(c.type) + statusBadge(c.status) + '</div>' +
         '<div class="contact-card-meta">' + (c.email ? escapeHtml(c.email) : '&mdash;') + '</div>' +
@@ -1112,6 +1130,26 @@
         }
       });
     });
+
+    $all('.card-delete-btn', container).forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        handleDeleteContactClick(btn.dataset.deleteId);
+      });
+    });
+  }
+
+  async function handleDeleteContactClick(contactId) {
+    if (!confirm('Delete this contact? This also removes its notes and tasks. This cannot be undone.')) {
+      return;
+    }
+    try {
+      await apiFetch('/api/contacts/' + encodeURIComponent(contactId), { method: 'DELETE' });
+      await loadContacts();
+    } catch (e) {
+      console.error('Failed to delete contact', e);
+      showError('contacts-error', 'Failed to delete contact. Please try again.');
+    }
   }
 
   function initContactsControls() {
