@@ -5,6 +5,7 @@ const cors = require('cors');
 const path = require('path');
 
 const pool = require('./db/pool');
+const { getDueSoonTasks } = require('./db/dueTasks');
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use(express.static(path.join(__dirname, '..', 'frontend', 'public')));
 app.use('/api/contacts', require('./routes/contacts'));
 app.use('/api/notes', require('./routes/notes'));
 app.use('/api/tasks', require('./routes/tasks'));
+app.use('/api/reminders', require('./routes/reminders'));
 
 // GET /api/dashboard - aggregate data for the dashboard view
 app.get('/api/dashboard', async (req, res) => {
@@ -28,15 +30,7 @@ app.get('/api/dashboard', async (req, res) => {
        GROUP BY status`
     );
 
-    const tasksDueSoonResult = await pool.query(
-      `SELECT tasks.*, contacts.name AS contact_name
-       FROM tasks
-       JOIN contacts ON contacts.id = tasks.contact_id
-       WHERE tasks.completed = false
-         AND tasks.due_date <= CURRENT_DATE + INTERVAL '3 days'
-       ORDER BY tasks.due_date ASC
-       LIMIT 10`
-    );
+    const tasksDueSoon = await getDueSoonTasks(pool, { limit: 10 });
 
     const recentContactsResult = await pool.query(
       `SELECT * FROM contacts
@@ -46,7 +40,7 @@ app.get('/api/dashboard', async (req, res) => {
 
     res.json({
       status_counts: statusCountsResult.rows,
-      tasks_due_soon: tasksDueSoonResult.rows,
+      tasks_due_soon: tasksDueSoon,
       recent_contacts: recentContactsResult.rows,
     });
   } catch (err) {

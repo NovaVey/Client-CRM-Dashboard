@@ -198,6 +198,17 @@
     margin-top: 2px;
   }
 
+  .reminders-card {
+    margin-bottom: 24px;
+  }
+
+  .reminders-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
   /* ---------- Dashboard grid ---------- */
   .dash-grid {
     display: grid;
@@ -701,6 +712,17 @@
     <div id="stat-cards" class="stat-row"></div>
     <div id="highlight-cards" class="highlight-row"></div>
 
+    <div class="card block reminders-card">
+      <div class="reminders-row">
+        <div>
+          <h2 class="section-title" style="margin-bottom:2px;">Email Reminders</h2>
+          <div id="reminders-status" class="contact-card-meta">Checking status&hellip;</div>
+        </div>
+        <button class="btn btn-secondary" id="send-reminder-btn" disabled>Send Now</button>
+      </div>
+      <div id="reminders-result" class="contact-card-meta" style="margin-top:8px;"></div>
+    </div>
+
     <div class="dash-grid">
       <div class="card block">
         <h2 class="section-title">Tasks Due Soon</h2>
@@ -983,6 +1005,47 @@
     renderHighlightCards(dashboardData, allContacts);
     renderTasksDueSoon(dashboardData ? dashboardData.tasks_due_soon : []);
     renderRecentContacts(dashboardData ? dashboardData.recent_contacts : []);
+    loadReminderStatus();
+  }
+
+  // ---------------- Email reminders ----------------
+  async function loadReminderStatus() {
+    var statusEl = $('#reminders-status');
+    var btn = $('#send-reminder-btn');
+    try {
+      var status = await apiFetch('/api/reminders/status');
+      if (status.enabled) {
+        statusEl.textContent = 'Enabled — a daily digest of due/overdue tasks can be sent by email.';
+        btn.disabled = false;
+      } else {
+        statusEl.textContent = 'Disabled. Set REMINDER_EMAILS_ENABLED=true (plus RESEND_API_KEY and REMINDER_FROM_EMAIL) on the server to turn this on.';
+        btn.disabled = true;
+      }
+    } catch (e) {
+      console.error('Failed to load reminder status', e);
+      statusEl.textContent = 'Could not check reminder status.';
+      btn.disabled = true;
+    }
+  }
+
+  async function handleSendReminderNow() {
+    var btn = $('#send-reminder-btn');
+    var resultEl = $('#reminders-result');
+    btn.disabled = true;
+    resultEl.textContent = 'Sending...';
+    try {
+      var result = await apiFetch('/api/reminders/send', { method: 'POST' });
+      if (result.sent) {
+        resultEl.textContent = 'Sent — ' + result.task_count + ' task(s) included.';
+      } else {
+        resultEl.textContent = result.reason || 'Nothing to send.';
+      }
+    } catch (e) {
+      console.error('Failed to send reminder digest', e);
+      resultEl.textContent = 'Failed to send reminder digest.';
+    } finally {
+      btn.disabled = false;
+    }
   }
 
   function renderStatCardsSkeleton() {
@@ -1483,6 +1546,7 @@
     $('#nav-dashboard').addEventListener('click', goToDashboard);
     $('#nav-contacts').addEventListener('click', goToContacts);
     $('#back-to-contacts').addEventListener('click', goToContacts);
+    $('#send-reminder-btn').addEventListener('click', handleSendReminderNow);
 
     initContactsControls();
 
