@@ -118,6 +118,16 @@ npm run reminders:send
 
 This script connects to the database, checks `REMINDER_EMAILS_ENABLED`, and sends (or skips) accordingly, then exits — it's meant to be invoked by a scheduler, not left running. On Railway, add a **Cron Job** service pointed at this repo with the start command `npm run reminders:send` and the same environment variables as the main app (`DATABASE_URL`, `REMINDER_EMAILS_ENABLED`, `RESEND_API_KEY`, `REMINDER_FROM_EMAIL`, `REMINDER_TO_EMAIL`), scheduled once daily.
 
+## Testing
+
+An end-to-end test suite ([Playwright](https://playwright.dev)) covers every view and button — dashboard stats, contact search/filter, adding/editing/deleting contacts, notes and tasks CRUD, overdue-task styling, email reminder status, and API validation/error-handling edge cases.
+
+```bash
+npm run test:e2e
+```
+
+This runs against whatever `BASE_URL` the app is reachable at (defaults to `http://localhost:3004`), so start the app (`npm start`) against a database first. **Use a disposable/test database, not production** — several tests exercise contact deletion.
+
 ## API Reference
 
 | Method | Endpoint | Description |
